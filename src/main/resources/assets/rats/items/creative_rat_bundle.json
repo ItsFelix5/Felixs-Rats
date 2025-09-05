@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "rats:item/creative_rat_bundle"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "id": "rats",
+  "version": "${version}",
+  "name": "Felix' Rats",
+  "description": "",
+  "authors": ["itsFelix5"],
+  "license": "MIT",
+  "icon": "assets/rats/textures/item/rat_bundle.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": ["rats.Main"],
+    "client": ["rats.Client"]
+  },
+  "depends": {
+    "fabric": "*"
+  }
+}

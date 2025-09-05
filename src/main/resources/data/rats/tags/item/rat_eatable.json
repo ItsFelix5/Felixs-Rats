@@ -1,0 +1,15 @@
+{
+  "values": [
+    "#minecraft:villager_picks_up",
+    "minecraft:melon_seeds",
+    "minecraft:pumpkin_seeds",
+    "minecraft:apple",
+    "minecraft:melon_slice",
+    "minecraft:sweet_berries",
+    "minecraft:glow_berries",
+    "minecraft:brown_mushroom",
+    "minecraft:red_mushroom",
+    "minecraft:wildflowers",
+    "minecraft:cocoa_beans"
+  ]
+}
