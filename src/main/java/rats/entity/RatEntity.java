@@ -7,7 +7,6 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -36,6 +35,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.world.World;
 import net.minecraft.world.event.GameEvent;
+import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
 import rats.Main;
 import rats.entity.goal.*;
@@ -164,10 +164,12 @@ public class RatEntity extends TameableEntity implements Angerable {
     @Override
     public boolean tryAttack(ServerWorld world, Entity target) {
         if (super.tryAttack(world, target)) {
+            target.timeUntilRegen = 15;
             ItemStack stack = getMainHandStack();
             if (stack.isOf(Items.TNT)) {
                 stack.decrement(1);
                 TntEntity tntEntity = new TntEntity(world, target.getX() + 0.5, target.getY(), target.getZ() + 0.5, this);
+                tntEntity.setFuse(40);
                 world.spawnEntity(tntEntity);
                 world.playSound(null, tntEntity.getX(), tntEntity.getY(), tntEntity.getZ(), SoundEvents.ENTITY_TNT_PRIMED, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 world.emitGameEvent(this, GameEvent.PRIME_FUSE, target.getPos());
@@ -215,9 +217,8 @@ public class RatEntity extends TameableEntity implements Angerable {
     }
 
     @Override
-    public boolean isInvulnerableTo(ServerWorld world, DamageSource source) {
-        System.out.println(source.getType().msgId());
-        return source.isIn(DamageTypeTags.IS_EXPLOSION) || super.isInvulnerableTo(world, source);
+    public boolean isImmuneToExplosion(Explosion explosion) {
+        return true;
     }
 
     @Override

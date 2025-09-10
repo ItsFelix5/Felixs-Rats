@@ -26,20 +26,16 @@
     "minecraft:enchanting_table",
     "minecraft:beacon",
     "minecraft:dragon_egg",
-    "#minecraft:hoes",
-    "#minecraft:shovels",
-    "#minecraft:swords",
-    "#c:tools/bow",
-    "#c:tools/brush",
-    "#c:tools/crossbow",
-    "#c:tools/igniter",
-    "#c:tools/shield",
     "#c:tools/spear",
     "#c:tools/mace",
     "minecraft:heavy_core",
     "minecraft:netherite_pickaxe",
     "minecraft:diamond_pickaxe",
     "minecraft:netherite_axe",
-    "minecraft:diamond_axe"
+    "minecraft:diamond_axe",
+    "minecraft:netherite_sword",
+    "minecraft:diamond_sword",
+    "minecraft:netherite_shovel",
+    "minecraft:diamond_shovel"
   ]
 }
