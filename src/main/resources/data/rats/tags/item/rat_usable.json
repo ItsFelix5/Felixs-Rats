@@ -3,6 +3,6 @@
     "#rats:rat_eatable",
     "minecraft:tnt",
     "#minecraft:pickaxes",
-    "#minecraft:axes"
+    "minecraft:golden_axe"
   ]
 }

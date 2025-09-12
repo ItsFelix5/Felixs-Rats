@@ -9,7 +9,7 @@ import java.util.List;
 
 public class HealGoal extends Goal {
     private final RatEntity mob;
-    private RatEntity other;
+    private RatEntity target;
     private int timer;
 
     public HealGoal(RatEntity mob) {
@@ -21,30 +21,30 @@ public class HealGoal extends Goal {
     public boolean canStart() {
         if (!mob.getMainHandStack().isIn(RatEntity.EATABLE)) return false;
         if (isValidTarget(mob)) {
-            this.other = mob;
+            this.target = mob;
             return true;
         }
         List<RatEntity> list = mob.getWorld()
                 .getEntitiesByClass(RatEntity.class, mob.getBoundingBox().expand(8.0, 8.0, 8.0), this::isValidTarget);
         if (list.isEmpty()) return false;
-        other = list.getFirst();
+        target = list.getFirst();
         return true;
     }
 
     @Override
     public boolean shouldContinue() {
-        return isValidTarget(other) && mob.getMainHandStack().isIn(RatEntity.EATABLE);
+        return isValidTarget(target) && mob.getMainHandStack().isIn(RatEntity.EATABLE);
     }
 
     @Override
     public void tick() {
-        if(mob != other) mob.getNavigation().startMovingTo(other, 1F);
-        if (mob.squaredDistanceTo(other) < 4 && ++timer >= 20) {
+        if(mob != target) mob.getNavigation().startMovingTo(target, 1F);
+        if (mob.squaredDistanceTo(target) < 4 && ++timer >= 20) {
             mob.getMainHandStack().decrement(1);
-            other.heal(3);
-            other.getWorld().sendEntityStatus(mob, EntityStatuses.ADD_BREEDING_PARTICLES);
-            other.playEatSound();
-            other = null;
+            target.heal(3);
+            target.getWorld().sendEntityStatus(mob, EntityStatuses.ADD_BREEDING_PARTICLES);
+            target.playEatSound();
+            target = null;
             timer = 0;
             canStart();
         }

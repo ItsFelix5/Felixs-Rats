@@ -2,7 +2,7 @@ package rats.entity.goal;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.TntEntity;
-import net.minecraft.entity.ai.NoPenaltyTargeting;
+import net.minecraft.entity.ai.FuzzyTargeting;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.PathAwareEntity;
@@ -34,7 +34,7 @@ public class RunFromTntGoal extends Goal {
             }
         }
         if (target == null) return false;
-        Vec3d vec3d = NoPenaltyTargeting.findFrom(this.mob, 160, 7, target.getPos());
+        Vec3d vec3d = FuzzyTargeting.findFrom(this.mob, 160, 7, target.getPos());
         if (vec3d == null) return false;
         this.fleePath = mob.getNavigation().findPathTo(vec3d.x, vec3d.y, vec3d.z, 0);
         return this.fleePath != null;

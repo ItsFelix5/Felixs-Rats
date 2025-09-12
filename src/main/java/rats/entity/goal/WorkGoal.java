@@ -1,7 +1,10 @@
 package rats.entity.goal;
 
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBlockTags;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.CropBlock;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.ItemStack;
@@ -94,8 +97,8 @@ public class WorkGoal extends Goal {
 
             world.syncWorldEvent(WorldEvents.BLOCK_BROKEN, target, Block.getRawIdFromState(state));
             Block.dropStacks(state, world, target, null, mob, mob.getMainHandStack());
-            if (type == TaskType.FARM) {
-                BlockState replanted = ((CropBlock) state.getBlock()).withAge(0);
+            if (state.getBlock() instanceof CropBlock crop) {
+                BlockState replanted = crop.withAge(0);
                 world.setBlockState(target, replanted, Block.NOTIFY_ALL);
 
                 world.emitGameEvent(GameEvent.BLOCK_CHANGE, target, GameEvent.Emitter.of(mob, replanted));

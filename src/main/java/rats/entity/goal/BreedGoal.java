@@ -9,7 +9,7 @@ import java.util.List;
 
 public class BreedGoal extends Goal {
     private final RatEntity mob;
-    private RatEntity mate;
+    private RatEntity target;
 
     public BreedGoal(RatEntity mob) {
         this.mob = mob;
@@ -18,30 +18,30 @@ public class BreedGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        if (!mob.getMainHandStack().isIn(RatEntity.EATABLE) || mob.isBaby() || mob.isPanicking() || mob.getBreedingAge() != 0) return false;
+        if (!mob.getMainHandStack().isIn(RatEntity.EATABLE) || mob.isPanicking() || mob.getBreedingAge() != 0) return false;
         List<RatEntity> list = mob.getWorld()
                 .getEntitiesByClass(RatEntity.class, mob.getBoundingBox().expand(8.0, 8.0, 8.0), this::isValidTarget);
         if (list.isEmpty()) return false;
-        mate = list.getFirst();
+        target = list.getFirst();
         return true;
     }
 
     @Override
     public void start() {
-        mob.getNavigation().startMovingTo(mate, 1F);
+        mob.getNavigation().startMovingTo(target, 1F);
     }
 
     @Override
     public boolean shouldContinue() {
-        return isValidTarget(mate);
+        return isValidTarget(target);
     }
 
     @Override
     public void tick() {
-        if (mob.squaredDistanceTo(mate) < 4) {
-            mob.breed((ServerWorld) mob.getWorld(), mate);
+        if (mob.squaredDistanceTo(target) < 4) {
+            mob.breed((ServerWorld) mob.getWorld(), target);
             mob.getMainHandStack().decrement(1);
-            mate = null;
+            target = null;
         }
     }
 

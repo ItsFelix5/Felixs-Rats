@@ -1,14 +1,27 @@
 {
   "values": [
-    "#minecraft:villager_picks_up",
-    "minecraft:melon_seeds",
-    "minecraft:pumpkin_seeds",
+    "minecraft:potato",
+    "minecraft:carrot",
+    "minecraft:bread",
+    "minecraft:wheat",
+    "minecraft:beetroot",
+
     "minecraft:apple",
     "minecraft:melon_slice",
+
     "minecraft:sweet_berries",
     "minecraft:glow_berries",
+
+    "minecraft:wheat_seeds",
+    "minecraft:beetroot_seeds",
+    "minecraft:torchflower_seeds",
+    "minecraft:melon_seeds",
+    "minecraft:pumpkin_seeds",
+    "minecraft:pitcher_pod",
+
     "minecraft:brown_mushroom",
     "minecraft:red_mushroom",
+
     "minecraft:wildflowers",
     "minecraft:cocoa_beans"
   ]
