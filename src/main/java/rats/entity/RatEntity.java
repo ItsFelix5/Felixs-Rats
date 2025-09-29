@@ -7,6 +7,7 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -31,6 +32,7 @@ import net.minecraft.storage.WriteView;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TimeHelper;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.minecraft.world.World;
@@ -74,6 +76,7 @@ public class RatEntity extends TameableEntity implements Angerable {
         this.goalSelector.add(1, new RunFromTntGoal(this));
         this.goalSelector.add(1, new SwimGoal(this));
         this.goalSelector.add(1, new TameableEntity.TameableEscapeDangerGoal(1.2, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES));
+        this.goalSelector.add(2, new RunFromAttackerGoal(this));
         this.goalSelector.add(2, new PounceAtTargetGoal(this, 0.4F));
         this.goalSelector.add(3, new MeleeAttackGoal(this, 1.0, true));
         this.goalSelector.add(3, new HealGoal(this));
@@ -180,6 +183,17 @@ public class RatEntity extends TameableEntity implements Angerable {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onDeath(DamageSource damageSource) {
+        super.onDeath(damageSource);
+        if (!(damageSource.getAttacker() instanceof LivingEntity target)) return;
+
+        for (RatEntity rat : getWorld().getEntitiesByClass(RatEntity.class,
+                Box.from(getPos()).expand(getAttributeValue(EntityAttributes.FOLLOW_RANGE)),
+                rat -> rat.getTarget() == null && rat.canAttackWithOwner(target, rat.getOwner())))
+            rat.setTarget(target);
     }
 
     @Override
