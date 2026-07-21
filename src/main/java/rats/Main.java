@@ -3,20 +3,21 @@ package rats;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.SpawnRestriction;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.GameRules;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
+import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.entity.EntityTypeTest;
+import net.minecraft.world.level.gamerules.GameRules;
+import net.minecraft.world.phys.AABB;
 import rats.entity.RatEntity;
 import rats.item.ModItems;
 
@@ -25,14 +26,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Main implements ModInitializer {
     public static final EntityType<RatEntity> RAT = Registry.register(
-            Registries.ENTITY_TYPE,
+            BuiltInRegistries.ENTITY_TYPE,
             id("rat"),
-            EntityType.Builder.create(RatEntity::new, SpawnGroup.MISC).dimensions(0.75f, 0.4f)
-                    .build(RegistryKey.of(RegistryKeys.ENTITY_TYPE, id("rat")))
+            EntityType.Builder.of(RatEntity::new, MobCategory.MISC).sized(0.75f, 0.4f)
+                    .build(ResourceKey.create(Registries.ENTITY_TYPE, id("rat")))
     );
 
     public static Identifier id(String path) {
-        return Identifier.of("rats", path);
+        return Identifier.fromNamespaceAndPath("rats", path);
     }
 
     @Override
@@ -40,26 +41,26 @@ public class Main implements ModInitializer {
         ModItems.init();
         FabricDefaultAttributeRegistry.register(RAT, RatEntity.createMobAttributes());
         AtomicInteger cooldown = new AtomicInteger();
-        ServerTickEvents.END_WORLD_TICK.register(world->{
-            if (world.getGameRules().getBoolean(GameRules.DO_MOB_SPAWNING) && cooldown.decrementAndGet() <= 0) {
+        ServerTickEvents.END_LEVEL_TICK.register(world->{
+            if (world.getGameRules().get(GameRules.SPAWN_MOBS) && cooldown.decrementAndGet() <= 0) {
                 cooldown.set(1200);
-                PlayerEntity playerEntity = world.getRandomAlivePlayer();
-                if (playerEntity != null) {
-                    Random random = world.random;
+                Player player = world.getRandomPlayer();
+                if (player != null) {
+                    RandomSource random = world.getRandom();
                     int i = (8 + random.nextInt(24)) * (random.nextBoolean() ? -1 : 1);
                     int j = (8 + random.nextInt(24)) * (random.nextBoolean() ? -1 : 1);
-                    BlockPos blockPos = playerEntity.getBlockPos().add(i, 0, j);
-                    if (world.isRegionLoaded(blockPos.getX() - 10, blockPos.getZ() - 10, blockPos.getX() + 10, blockPos.getZ() + 10)) {
-                        if (SpawnRestriction.isSpawnPosAllowed(RAT, world, blockPos)) {
-                            if (world.getStructureAccessor().getStructureContaining(blockPos, s->true).hasChildren()) {
-                                List<RatEntity> list = world.getNonSpectatingEntities(RatEntity.class, new Box(blockPos).expand(20));
+                    BlockPos blockPos = player.blockPosition().offset(i, 0, j);
+                    if (world.hasChunksAt(blockPos.getX() - 10, blockPos.getZ() - 10, blockPos.getX() + 10, blockPos.getZ() + 10)) {
+                        if (SpawnPlacements.isSpawnPositionOk(RAT, world, blockPos)) {
+                            if (world.structureManager().hasAnyStructureAt(blockPos)) {
+                                List<RatEntity> list = world.getEntities(EntityTypeTest.forClass(RatEntity.class), new AABB(blockPos).inflate(20), rat -> true);
                                 for (int k = 0; k < 3 - list.size(); k++) {
-                                    RatEntity ratEntity = RAT.create(world, SpawnReason.NATURAL);
+                                    RatEntity ratEntity = RAT.create(world, EntitySpawnReason.NATURAL);
                                     if (ratEntity != null) {
-                                        ratEntity.initialize(world, world.getLocalDifficulty(blockPos), SpawnReason.NATURAL, null);
+                                        ratEntity.finalizeSpawn(world, world.getCurrentDifficultyAt(blockPos), EntitySpawnReason.NATURAL, null);
 
-                                        ratEntity.refreshPositionAndAngles(blockPos, 0.0F, 0.0F);
-                                        world.spawnEntity(ratEntity);
+                                        ratEntity.snapTo(blockPos, 0.0F, 0.0F);
+                                        world.addFreshEntity(ratEntity);
                                     }
                                 }
                             }

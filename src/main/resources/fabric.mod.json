@@ -13,6 +13,6 @@
     "client": ["rats.Client"]
   },
   "depends": {
-    "fabric": "*"
+    "minecraft": "~26.2"
   }
 }

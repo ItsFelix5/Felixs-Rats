@@ -3,35 +3,35 @@ package rats.entity.goal;
 import java.util.EnumSet;
 import java.util.function.Predicate;
 
-import net.minecraft.entity.ai.TargetPredicate;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public class TemptGoal extends Goal {
-    private final TargetPredicate predicate;
-    protected final MobEntity mob;
-    protected PlayerEntity closestPlayer;
+    private final TargetingConditions predicate;
+    protected final Mob mob;
+    protected Player closestPlayer;
 
-    public TemptGoal(MobEntity mob, Predicate<ItemStack> temptItemPredicate) {
+    public TemptGoal(Mob mob, Predicate<ItemStack> temptItemPredicate) {
         this.mob = mob;
-        this.predicate = TargetPredicate.createNonAttackable().ignoreVisibility().setBaseMaxDistance(32)
-                .setPredicate((entity, world) -> temptItemPredicate.test(entity.getMainHandStack()) || temptItemPredicate.test(entity.getOffHandStack()));
-        this.setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
+        this.predicate = TargetingConditions.forNonCombat().ignoreLineOfSight().range(32)
+                .selector((entity, world) -> temptItemPredicate.test(entity.getMainHandItem()) || temptItemPredicate.test(entity.getOffhandItem()));
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
     }
 
     @Override
-    public boolean canStart() {
-        this.closestPlayer = getServerWorld(this.mob).getClosestPlayer(this.predicate, this.mob);
+    public boolean canUse() {
+        this.closestPlayer = getServerLevel(this.mob).getNearestPlayer(this.predicate, this.mob);
         return this.closestPlayer != null;
     }
 
     @Override
     public void tick() {
-        this.mob.getLookControl().lookAt(this.closestPlayer, this.mob.getMaxHeadRotation() + 20, this.mob.getMaxLookPitchChange());
-        if (this.mob.squaredDistanceTo(this.closestPlayer) < 6.25) this.mob.getNavigation().stop();
-        else this.mob.getNavigation().startMovingTo(this.closestPlayer, 1);
+        this.mob.getLookControl().setLookAt(this.closestPlayer, this.mob.getMaxHeadYRot() + 20, this.mob.getMaxHeadXRot());
+        if (this.mob.distanceToSqr(this.closestPlayer) < 6.25) this.mob.getNavigation().stop();
+        else this.mob.getNavigation().moveTo(this.closestPlayer, 1);
     }
 
     @Override

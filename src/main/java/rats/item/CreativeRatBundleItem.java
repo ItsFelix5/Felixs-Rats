@@ -1,30 +1,30 @@
 package rats.item;
 
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
 import rats.Main;
 
 public class CreativeRatBundleItem extends Item {
-    public CreativeRatBundleItem(Settings settings) {
+    public CreativeRatBundleItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult use(World world, PlayerEntity user, Hand hand) {
-        if (!(world instanceof ServerWorld serverWorld)) return ActionResult.PASS;
+    public InteractionResult use(Level world, Player user, InteractionHand hand) {
+        if (!(world instanceof ServerLevel serverWorld)) return InteractionResult.PASS;
 
         Main.RAT.create(serverWorld, rat -> {
-            if (hand == Hand.MAIN_HAND) rat.setTamedBy(user);
-            serverWorld.spawnEntity(rat);
-            rat.setVelocity(user.getRotationVec(1));
-        }, BlockPos.ofFloored(user.getEyePos()), SpawnReason.BUCKET, true, false);
+            if (hand == InteractionHand.MAIN_HAND) rat.tame(user);
+            serverWorld.addFreshEntity(rat);
+            rat.setDeltaMovement(user.getViewVector(1));
+        }, BlockPos.containing(user.getEyePosition()), EntitySpawnReason.BUCKET, true, false);
 
-        return ActionResult.SUCCESS;
+        return InteractionResult.SUCCESS;
     }
 }

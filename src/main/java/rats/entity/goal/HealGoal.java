@@ -1,7 +1,7 @@
 package rats.entity.goal;
 
-import net.minecraft.entity.EntityStatuses;
-import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.world.entity.EntityEvent;
+import net.minecraft.world.entity.ai.goal.Goal;
 import rats.entity.RatEntity;
 
 import java.util.EnumSet;
@@ -14,39 +14,39 @@ public class HealGoal extends Goal {
 
     public HealGoal(RatEntity mob) {
         this.mob = mob;
-        this.setControls(EnumSet.of(Control.MOVE));
+        this.setFlags(EnumSet.of(Flag.MOVE));
     }
 
     @Override
-    public boolean canStart() {
-        if (!mob.getMainHandStack().isIn(RatEntity.EATABLE)) return false;
+    public boolean canUse() {
+        if (!mob.getMainHandItem().is(RatEntity.EATABLE)) return false;
         if (isValidTarget(mob)) {
             this.target = mob;
             return true;
         }
-        List<RatEntity> list = mob.getWorld()
-                .getEntitiesByClass(RatEntity.class, mob.getBoundingBox().expand(8.0, 8.0, 8.0), this::isValidTarget);
+        List<RatEntity> list = mob.level()
+                .getEntitiesOfClass(RatEntity.class, mob.getBoundingBox().inflate(8.0, 8.0, 8.0), this::isValidTarget);
         if (list.isEmpty()) return false;
         target = list.getFirst();
         return true;
     }
 
     @Override
-    public boolean shouldContinue() {
-        return isValidTarget(target) && mob.getMainHandStack().isIn(RatEntity.EATABLE);
+    public boolean canContinueToUse() {
+        return isValidTarget(target) && mob.getMainHandItem().is(RatEntity.EATABLE);
     }
 
     @Override
     public void tick() {
-        if(mob != target) mob.getNavigation().startMovingTo(target, 1F);
-        if (mob.squaredDistanceTo(target) < 4 && ++timer >= 20) {
-            mob.getMainHandStack().decrement(1);
+        if(mob != target) mob.getNavigation().moveTo(target, 1F);
+        if (mob.distanceToSqr(target) < 4 && ++timer >= 20) {
+            mob.getMainHandItem().shrink(1);
             target.heal(3);
-            target.getWorld().sendEntityStatus(mob, EntityStatuses.ADD_BREEDING_PARTICLES);
-            target.playEatSound();
+            target.level().broadcastEntityEvent(mob, EntityEvent.LOVE_HEARTS);
+            target.playEatingSound();
             target = null;
             timer = 0;
-            canStart();
+            canUse();
         }
     }
 

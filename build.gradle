@@ -1,44 +1,43 @@
 plugins {
-    id 'fabric-loom' version '1.11-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
 }
 
 version = project.mod_version
-group = "io.github.itsfelix5"
+group = "eu.felixs"
 
-base {
-    archivesName = "Felix's rats"
+loom {
+    decompilerOptions.named("vineflower") {
+        options.put("mark-corresponding-synthetics", "1")
+    }
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.minecraft_version}+build.${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:+"
-
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "net.fabricmc:fabric-loader:+"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 }
 
 processResources {
     inputs.property "version", project.version
-    filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        expand "version": inputs.properties.version
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-    it.options.release.set(21)
+    it.options.release = 25
 }
 
 java {
-    if (JavaVersion.current() < JavaVersion.toVersion(21)) {
-        toolchain.languageVersion = JavaLanguageVersion.of(21)
-    }
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
+    inputs.property "projectName", project.name
+
     from("LICENSE") {
-        rename { "${it}_RATS" }
+        rename { "${it}_${project.name}"}
     }
 }

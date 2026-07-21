@@ -1,7 +1,7 @@
 package rats.entity.goal;
 
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.server.world.ServerWorld;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.ai.goal.Goal;
 import rats.entity.RatEntity;
 
 import java.util.EnumSet;
@@ -13,14 +13,14 @@ public class BreedGoal extends Goal {
 
     public BreedGoal(RatEntity mob) {
         this.mob = mob;
-        this.setControls(EnumSet.of(Goal.Control.MOVE));
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE));
     }
 
     @Override
-    public boolean canStart() {
-        if (!mob.getMainHandStack().isIn(RatEntity.EATABLE) || mob.isPanicking() || mob.getBreedingAge() != 0) return false;
-        List<RatEntity> list = mob.getWorld()
-                .getEntitiesByClass(RatEntity.class, mob.getBoundingBox().expand(8.0, 8.0, 8.0), this::isValidTarget);
+    public boolean canUse() {
+        if (!mob.getMainHandItem().is(RatEntity.EATABLE) || mob.isPanicking() || mob.getAge() != 0) return false;
+        List<RatEntity> list = mob.level()
+                .getEntitiesOfClass(RatEntity.class, mob.getBoundingBox().inflate(8.0, 8.0, 8.0), this::isValidTarget);
         if (list.isEmpty()) return false;
         target = list.getFirst();
         return true;
@@ -28,25 +28,25 @@ public class BreedGoal extends Goal {
 
     @Override
     public void start() {
-        mob.getNavigation().startMovingTo(target, 1F);
+        mob.getNavigation().moveTo(target, 1F);
     }
 
     @Override
-    public boolean shouldContinue() {
+    public boolean canContinueToUse() {
         return isValidTarget(target);
     }
 
     @Override
     public void tick() {
-        if (mob.squaredDistanceTo(target) < 4) {
-            mob.breed((ServerWorld) mob.getWorld(), target);
-            mob.getMainHandStack().decrement(1);
+        if (mob.distanceToSqr(target) < 4) {
+            mob.spawnChildFromBreeding((ServerLevel) mob.level(), target);
+            mob.getMainHandItem().shrink(1);
             target = null;
         }
     }
 
     private boolean isValidTarget(RatEntity entity) {
-        if (entity == null || !entity.isAlive() || entity.isBaby() || entity.isPanicking() || mob == entity || entity.getBreedingAge() != 0) return false;
-        return mob.getMainHandStack().isIn(RatEntity.EATABLE);
+        if (entity == null || !entity.isAlive() || entity.isBaby() || entity.isPanicking() || mob == entity || entity.getAge() != 0) return false;
+        return mob.getMainHandItem().is(RatEntity.EATABLE);
     }
 }

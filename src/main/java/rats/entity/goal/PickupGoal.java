@@ -1,8 +1,8 @@
 package rats.entity.goal;
 
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.item.ItemStack;
 import rats.entity.RatEntity;
 
 import java.util.EnumSet;
@@ -15,20 +15,20 @@ public class PickupGoal extends Goal {
 
     public PickupGoal(RatEntity mob) {
         this.mob = mob;
-        this.setControls(EnumSet.of(Goal.Control.MOVE));
+        this.setFlags(EnumSet.of(Goal.Flag.MOVE));
     }
 
     @Override
-    public boolean canStart() {
-        List<ItemEntity> list = mob.getWorld()
-                .getEntitiesByClass(ItemEntity.class, mob.getBoundingBox().expand(16.0, 16.0, 16.0), this::isValidTarget);
+    public boolean canUse() {
+        List<ItemEntity> list = mob.level()
+                .getEntitiesOfClass(ItemEntity.class, mob.getBoundingBox().inflate(16.0, 16.0, 16.0), this::isValidTarget);
         if (list.isEmpty()) return false;
         target = list.getFirst();
-        return mob.getNavigation().startMovingTo(target, 1F);
+        return mob.getNavigation().moveTo(target, 1F);
     }
 
     @Override
-    public boolean shouldContinue() {
+    public boolean canContinueToUse() {
         return isValidTarget(target) && tryingTime < 120;
     }
 
@@ -38,9 +38,9 @@ public class PickupGoal extends Goal {
     }
 
     private boolean isValidTarget(ItemEntity entity) {
-        if (!entity.isAlive() || entity.cannotPickup()) return false;
-        ItemStack stack = entity.getStack();
-        ItemStack held = mob.getMainHandStack();
-        return (held.isEmpty() && (stack.isIn(RatEntity.USABLE) || stack.isIn(RatEntity.VALUABLE))) || (held.isOf(stack.getItem()) && held.getCount() < held.getMaxCount());
+        if (!entity.isAlive() || entity.hasPickUpDelay()) return false;
+        ItemStack stack = entity.getItem();
+        ItemStack held = mob.getMainHandItem();
+        return (held.isEmpty() && (stack.is(RatEntity.USABLE) || stack.is(RatEntity.VALUABLE))) || (held.is(stack.getItem()) && held.getCount() < held.getMaxStackSize());
     }
 }

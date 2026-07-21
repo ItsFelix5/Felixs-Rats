@@ -1,23 +1,24 @@
 package rats.entity;
 
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.render.entity.MobEntityRenderer;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemDisplayContext;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.RotationAxis;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemDisplayContext;
 import rats.Client;
 import rats.Main;
 
-public class RatRenderer extends MobEntityRenderer<RatEntity, RatRenderState, RatModel> {
-    public RatRenderer(EntityRendererFactory.Context context) {
-        super(context, new RatModel(context.getPart(Client.RAT_LAYER)), 0.5f);
+public class RatRenderer extends MobRenderer<RatEntity, RatRenderState, RatModel> {
+    public RatRenderer(EntityRendererProvider.Context context) {
+        super(context, new RatModel(context.bakeLayer(Client.RAT_LAYER)), 0.5f);
     }
 
     @Override
-    public Identifier getTexture(RatRenderState state) {
+    public Identifier getTextureLocation(RatRenderState state) {
         return Main.id("textures/entity/rat/rat.png");
     }
 
@@ -27,24 +28,24 @@ public class RatRenderer extends MobEntityRenderer<RatEntity, RatRenderState, Ra
     }
 
     @Override
-    public void updateRenderState(RatEntity entity, RatRenderState state, float tickProgress) {
-        super.updateRenderState(entity, state, tickProgress);
-        itemModelResolver.updateForLivingEntity(state.itemState, entity.getMainHandStack(), ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, entity);
+    public void extractRenderState(RatEntity entity, RatRenderState state, float tickProgress) {
+        super.extractRenderState(entity, state, tickProgress);
+        itemModelResolver.updateForLiving(state.itemState, entity.getMainHandItem(), ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, entity);
     }
 
     @Override
-    public void render(RatRenderState state, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
-        if (state.baby) matrices.scale(0.6f, 0.6f, 0.6f);
+    public void submit(RatRenderState state, PoseStack matrices, SubmitNodeCollector collector, CameraRenderState cameraState) {
+        if (state.isBaby) matrices.scale(0.6f, 0.6f, 0.6f);
         if (!state.itemState.isEmpty()) {
-            matrices.push();
+            matrices.pushPose();
             matrices.scale(0.7F, 0.7F, 0.7F);
-            matrices.multiply(RotationAxis.NEGATIVE_Y.rotationDegrees(state.bodyYaw));
-            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(90.0F));
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0F));
+            matrices.mulPose(Axis.YN.rotationDegrees(state.bodyRot));
+            matrices.mulPose(Axis.XP.rotationDegrees(90.0F));
+            matrices.mulPose(Axis.YP.rotationDegrees(180.0F));
             matrices.translate(0F, 0.2F, 0F);
-            state.itemState.render(matrices, vertexConsumers, light, OverlayTexture.DEFAULT_UV);
-            matrices.pop();
+            state.itemState.submit(matrices, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
+            matrices.popPose();
         }
-        super.render(state, matrices, vertexConsumers, light);
+        super.submit(state, matrices, collector, cameraState);
     }
 }
