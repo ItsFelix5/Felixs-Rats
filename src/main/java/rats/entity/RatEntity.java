@@ -69,7 +69,7 @@ public class RatEntity extends TamableAnimal implements NeutralMob {
         return Animal.createAnimalAttributes()
                 .add(Attributes.MOVEMENT_SPEED, 0.4F)
                 .add(Attributes.MAX_HEALTH, 8.0)
-                .add(Attributes.ATTACK_DAMAGE, 2.0)
+                .add(Attributes.ATTACK_DAMAGE, 0.2F)
                 .add(Attributes.ATTACK_KNOCKBACK, 0.2);
     }
 
@@ -79,7 +79,8 @@ public class RatEntity extends TamableAnimal implements NeutralMob {
         this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(1, new TamableAnimal.TamableAnimalPanicGoal(1.2, DamageTypeTags.PANIC_ENVIRONMENTAL_CAUSES));
         this.goalSelector.addGoal(2, new RunFromAttackerGoal(this));
-        this.goalSelector.addGoal(2, new LeapAtTargetGoal(this, 0.4F));
+        this.goalSelector.addGoal(2, new HighLeapAtTargetGoal(this));
+        this.goalSelector.addGoal(3, new LeapAtTargetGoal(this, 0.4F));
         this.goalSelector.addGoal(3, new MeleeAttackGoal(this, 1.0, true));
         this.goalSelector.addGoal(3, new HealGoal(this));
         this.goalSelector.addGoal(4, new WorkGoal(this));
@@ -169,7 +170,7 @@ public class RatEntity extends TamableAnimal implements NeutralMob {
     @Override
     public boolean doHurtTarget(ServerLevel world, Entity target) {
         if (super.doHurtTarget(world, target)) {
-            target.invulnerableTime = 15;
+            target.invulnerableTime = 5;
             ItemStack stack = getMainHandItem();
             if (stack.is(Items.TNT)) {
                 stack.shrink(1);
