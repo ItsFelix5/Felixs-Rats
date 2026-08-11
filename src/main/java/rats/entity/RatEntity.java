@@ -200,6 +200,11 @@ public class RatEntity extends TamableAnimal implements NeutralMob {
     }
 
     @Override
+    public boolean removeWhenFarAway(double distanceSquared) {
+        return !isTame() && getMainHandItem().isEmpty();
+    }
+
+    @Override
     public boolean shouldTryTeleportToOwner() {
         return onGround() && this.getOwner() != null && this.distanceToSqr(this.getOwner()) >= 2400;
     }

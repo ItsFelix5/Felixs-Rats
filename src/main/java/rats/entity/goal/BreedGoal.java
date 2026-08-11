@@ -41,12 +41,13 @@ public class BreedGoal extends Goal {
         if (mob.distanceToSqr(target) < 4) {
             mob.spawnChildFromBreeding((ServerLevel) mob.level(), target);
             mob.getMainHandItem().shrink(1);
+            target.getMainHandItem().shrink(1);
             target = null;
         }
     }
 
     private boolean isValidTarget(RatEntity entity) {
         if (entity == null || !entity.isAlive() || entity.isBaby() || entity.isPanicking() || mob == entity || entity.getAge() != 0) return false;
-        return mob.getMainHandItem().is(RatEntity.EATABLE);
+        return entity.getMainHandItem().is(RatEntity.EATABLE);
     }
 }
